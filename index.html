@@ -10,16 +10,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy: #0A1530;      /* page */
-  --deck: #101D3E;      /* raised surfaces */
-  --rule: #22335F;      /* yard lines / dividers */
-  --ink: #EEF2FF;       /* text */
-  --mute: #8C9AC4;      /* secondary text */
-  --gold: #FFC81F;      /* the game's gold */
-  --turf: #3DD68C;      /* positive plays */
-  --flag: #FF5468;      /* negative plays */
-  --cond: "Barlow Condensed", "Arial Narrow", sans-serif;
-  --body: "Barlow", system-ui, sans-serif;
+  --navy: #0A1530; --deck: #101D3E; --rule: #22335F; --ink: #EEF2FF; --mute: #8C9AC4;
+  --gold: #FFC81F; --turf: #3DD68C; --flag: #FF5468; --score: #FF2E3E; --sky: #4DA3FF;
+  --cond: "Barlow Condensed", "Arial Narrow", sans-serif; --body: "Barlow", system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -28,9 +21,7 @@ body { padding-bottom: env(safe-area-inset-bottom, 0px); }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
-.wrap { max-width: 820px; margin: 0 auto; padding: 0 16px; }
-
-/* top bar */
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
 .top { position: sticky; top: 0; z-index: 10; background: var(--navy); border-bottom: 1px solid var(--rule); padding-top: env(safe-area-inset-top, 0px); }
 .top .wrap { display: flex; align-items: center; gap: 12px; height: 56px; }
 .brand { font: 800 22px/1 var(--cond); letter-spacing: .5px; }
@@ -44,10 +35,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .gamerow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 16px 4px; border-bottom: 1px solid var(--rule); }
 .gamerow:hover { background: var(--deck); }
 .side { display: flex; align-items: center; gap: 10px; }
-.side.r { justify-content: flex-end; flex-direction: row-reverse; text-align: right; }
+.side.r { flex-direction: row-reverse; text-align: right; }
 .badge { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 800 12px var(--cond); flex: none; border: 2px solid rgba(255,255,255,.25); }
 .badge.lg { width: 52px; height: 52px; font-size: 16px; }
 .badge.sm { width: 22px; height: 22px; font-size: 9px; border-width: 1px; }
+a.badge:hover, a > .badge:hover { border-color: var(--gold); }
 .tname { font: 700 18px/1.1 var(--cond); }
 .tname small { display: block; font: 500 12px var(--body); color: var(--mute); }
 .mid { text-align: center; min-width: 120px; }
@@ -58,7 +50,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @keyframes pulse { 50% { opacity: .25; } }
 .tag { font: 600 11px var(--body); color: var(--gold); border: 1px solid var(--gold); border-radius: 10px; padding: 0 6px; margin-left: 6px; }
 
-/* scoreboard: the signature piece — a broadcast chyron with the field strip */
+/* scoreboard */
 .board { padding: 18px 0 10px; }
 .board .row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
 .board .team { display: flex; align-items: center; gap: 12px; }
@@ -68,50 +60,72 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .board .clock { text-align: center; font: 700 20px/1.1 var(--cond); }
 .board .clock .dd { display: block; font: 600 14px var(--body); color: var(--gold); margin-top: 4px; }
 .poss { color: var(--gold); font-size: 14px; margin: 0 4px; }
-.field { position: relative; height: 26px; margin: 16px 0 4px; border-radius: 4px; background:
-  repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--rule) calc(10% - 1px) 10%), #0E2246; overflow: hidden; }
+.field { position: relative; height: 26px; margin: 16px 0 4px; border-radius: 4px; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--rule) calc(10% - 1px) 10%), #0E2246; overflow: hidden; }
 .field .ez { position: absolute; top: 0; bottom: 0; width: 6%; opacity: .55; }
 .field .drive { position: absolute; top: 9px; height: 8px; background: var(--gold); border-radius: 4px; transition: left .5s, width .5s; }
 .field .ball { position: absolute; top: 5px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: #8B4A1E; border: 2px solid #F3E2C7; transition: left .5s; }
 .field .fd { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: var(--gold); box-shadow: 0 0 6px var(--gold); transition: left .5s; }
 .yards { display: flex; justify-content: space-between; font: 600 11px var(--cond); color: var(--mute); padding: 0 1%; }
 
-/* tabs */
 .tabs { display: flex; border-bottom: 1px solid var(--rule); margin-top: 6px; overflow-x: auto; }
 .tabs a { flex: 1; text-align: center; padding: 12px 10px; font: 700 16px var(--cond); color: var(--mute); border-bottom: 3px solid transparent; white-space: nowrap; }
 .tabs a.on { color: var(--ink); border-color: var(--gold); }
+.tabs.sub a { font-size: 15px; padding: 9px; }
 
 /* feed */
 .play { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--rule); }
 .play .meta { font: 500 13px var(--body); color: var(--mute); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.play h3 { margin: 2px 0 2px; font: 800 22px/1.1 var(--cond); }
-.play h3.td { color: var(--gold); }
+.play h3 { margin: 2px 0 2px; font: 800 22px/1.1 var(--cond); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.play h3.sc { color: var(--score); }
 .play h3.to { color: var(--flag); }
+.chip { font: 700 11px/1 var(--body); padding: 4px 7px; border-radius: 10px; letter-spacing: .2px; }
+.chip.win { background: var(--score); color: #fff; }
+.chip.lead { background: var(--gold); color: var(--navy); }
+.chip.tie { border: 1px solid var(--gold); color: var(--gold); }
+.chip.run { background: var(--turf); color: var(--navy); }
+.chip.open { border: 1px solid var(--sky); color: var(--sky); }
 .play .who { font: 600 14px var(--body); }
 .play .who span, .play .who2 span { color: var(--mute); font-weight: 500; }
 .play .who2 { font: 500 13px var(--body); color: var(--mute); }
 .play .who a:hover, .play .who2 a:hover { text-decoration: underline; }
 .val { font: 800 18px var(--cond); align-self: start; padding-top: 2px; min-width: 52px; text-align: right; }
 .pos { color: var(--turf); } .neg { color: var(--flag); } .zero { color: var(--mute); }
-.call { font: 600 11px var(--body); color: var(--mute); border: 1px solid var(--rule); border-radius: 10px; padding: 0 7px; }
 
-/* stats */
-h2 { font: 800 24px/1 var(--cond); margin: 26px 0 12px; }
+/* game tab */
+h2 { font: 800 22px/1 var(--cond); margin: 24px 0 10px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { text-align: left; font: 600 12px var(--body); color: var(--mute); padding: 8px 6px; border-bottom: 1px solid var(--rule); }
 td { padding: 10px 6px; border-bottom: 1px solid var(--rule); }
-td.n, th.n { text-align: right; font-family: var(--cond); font-size: 17px; font-weight: 700; }
+td.n, th.n { text-align: center; font-family: var(--cond); font-size: 18px; font-weight: 700; }
 .scroll { overflow-x: auto; }
-.cmp { display: grid; grid-template-columns: 56px 1fr 56px; align-items: center; gap: 10px; margin: 10px 0; }
-.cmp .lbl { grid-column: 1 / -1; text-align: center; font: 600 12px var(--body); color: var(--mute); margin-bottom: -6px; }
-.cmp .n { font: 800 20px var(--cond); }
-.cmp .n.r { text-align: right; }
-.bars { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; height: 10px; }
-.bars i { display: block; height: 10px; border-radius: 3px; }
-.bars .a { justify-self: end; } .bars .h { justify-self: start; }
+.leads { display: flex; gap: 22px; flex-wrap: wrap; font: 600 14px var(--body); color: var(--mute); }
+.leads b { color: var(--ink); font: 800 20px var(--cond); margin: 0 4px 0 6px; }
+.h2h { margin-top: 6px; }
+.h2h .r { display: grid; grid-template-columns: 70px 1fr 70px; align-items: end; padding: 9px 0 0; }
+.h2h .r .l, .h2h .r .rv { font: 800 18px/1 var(--cond); }
+.h2h .r .rv { text-align: right; }
+.h2h .r .lbl { text-align: center; font: 500 13px var(--body); color: var(--mute); }
+.h2h .bar { display: flex; height: 6px; margin: 6px 0 4px; border-radius: 3px; overflow: hidden; background: var(--rule); }
+.h2h .bar i { display: block; height: 6px; }
+.h2h .bar i + i { border-left: 2px solid var(--navy); }
+.h2h .heads { display: flex; justify-content: space-between; margin-bottom: 4px; }
+
+/* team page */
+.teamhead { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; padding: 16px 0 12px; border-bottom: 1px solid var(--rule); }
+.teamhead .nm { font: 800 22px/1 var(--cond); }
+.teamhead .nm small { font: 700 16px var(--cond); margin-left: 8px; }
+.strip { display: flex; gap: 18px; overflow-x: auto; padding: 8px 0 2px; }
+.strip div { flex: none; font: 800 19px/1 var(--cond); }
+.strip div small { display: block; font: 600 10px var(--body); color: var(--mute); margin-top: 3px; }
+.prow { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.prow .badge { width: 44px; height: 44px; font-size: 14px; }
+.prow .nm { font: 600 14px var(--body); }
+.prow .nm span { color: var(--mute); font-weight: 500; }
+.prow .nm em { font-style: normal; font-weight: 700; margin-left: 4px; }
+.you { font: 600 10px var(--body); color: var(--gold); border: 1px solid var(--gold); border-radius: 8px; padding: 0 5px; margin-left: 6px; }
 
 /* performances */
-.strip { display: flex; gap: 10px; overflow-x: auto; padding: 14px 2px 6px; }
+.avstrip { display: flex; gap: 10px; overflow-x: auto; padding: 14px 2px 6px; }
 .av { position: relative; flex: none; }
 .av .badge { width: 46px; height: 46px; font-size: 14px; }
 .av.on .badge { outline: 3px solid var(--gold); outline-offset: 2px; }
@@ -127,7 +141,7 @@ td.n, th.n { text-align: right; font-family: var(--cond); font-size: 17px; font-
 svg.chart { width: 100%; height: 190px; display: block; }
 .empty { color: var(--mute); padding: 40px 4px; text-align: center; }
 .empty strong { display: block; color: var(--ink); font: 700 22px var(--cond); margin-bottom: 6px; }
-.filter { display: flex; gap: 8px; margin: 0 0 12px; }
+.filter { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
 .filter button { font: 600 13px var(--body); color: var(--mute); border: 1px solid var(--rule); border-radius: 16px; padding: 4px 12px; }
 .filter button.on { color: var(--navy); background: var(--gold); border-color: var(--gold); }
 @media (max-width: 560px) {
@@ -148,16 +162,23 @@ const DB_URL = "https://gridiron-feed-default-rtdb.firebaseio.com/";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, onValue, off, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const app = document.getElementById("app");
-const topbar = document.getElementById("topbar");
+const app = document.getElementById("app"), topbar = document.getElementById("topbar");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ORD = ["", "1st", "2nd", "3rd", "4th"];
-const qName = q => q >= 5 ? "OT" : "Q" + q;
+const qName = q => q >= 6 ? "2OT" : q >= 5 ? "OT" : "Q" + q;
 const sign = v => (v > 0.005 ? "+" : v < -0.005 ? "−" : "") + Math.abs(v).toFixed(1);
 const cls = v => v > 0.005 ? "pos" : v < -0.005 ? "neg" : "zero";
+const whole = t => String(t ?? "").replace(/-?\d+\.\d+/g, m => Math.round(+m)); // "49.05-yd" -> "49-yd"
 const initials = n => String(n || "?").replace(/[^A-Za-z0-9 .]/g, "").split(/[ .]+/).filter(Boolean).slice(-2).map(w => w[0]).join("").toUpperCase() || "?";
 const badge = (t, size = "") => t ? `<span class="badge ${size}" style="background:${esc(t.color)};color:${esc(t.color2)}">${esc(t.abbr)}</span>` : "";
+const avatar = (name, t) => `<span class="badge" style="background:${esc(t?.color)};color:${esc(t?.color2)}">${esc(initials(name))}</span>`;
 const posOf = p => p ? (p.slot === "QB" ? "QB" : p.slot === "RB" ? "RB" : (p.slot || "").startsWith("WR") ? "WR" : (p.slot === "LG" || p.slot === "RG") ? "OL" : p.slot) : "";
+const secs = c => { const [m, s] = String(c || "0:00").split(":").map(Number); return (m || 0) * 60 + (s || 0); };
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const avg = (a, b) => b ? (a / b).toFixed(1) : "0.0";
+const passerRating = (c, a, y, td, i) => { if (!a) return 0; const k = x => Math.min(2.375, Math.max(0, x));
+  return (k((c / a - .3) * 5) + k((y / a - 3) * .25) + k(td / a * 20) + k(2.375 - i / a * 25)) / 6 * 100; };
 
 if (DB_URL.includes("YOUR-PROJECT")) {
   app.innerHTML = `<div class="empty"><strong>Connect your database</strong>Open index.html and set DB_URL to your Firebase Realtime Database URL. The README walks through it.</div>`;
@@ -189,111 +210,185 @@ function showGames() {
   });
 }
 
+// ---------------- derived game data ----------------
+// tags from the score before/after every play; "Game-winning" = the last time the winner took the lead in a final
+function tagPlays(asc, meta) {
+  const tags = {};
+  let ph = 0, pa = 0, lastLead = {};
+  for (const p of asc) {
+    const t = [];
+    const bh = p.preHome ?? ph, ba = p.preAway ?? pa, h = p.homeScore ?? bh, a = p.awayScore ?? ba;
+    if (h !== bh || a !== ba) {
+      const scorer = h - bh > a - ba ? "Home" : "Away";
+      const leadBefore = Math.sign(bh - ba), leadAfter = Math.sign(h - a), mine = scorer === "Home" ? 1 : -1;
+      if (leadAfter === 0 && leadBefore !== 0) t.push(["Game-tying", "tie"]);
+      else if (leadAfter === mine && leadBefore !== mine) { t.push(["Lead-taking", "lead"]); lastLead[scorer] = p.n; }
+    }
+    if (p.rush && !p.td && p.gain >= 40) t.push(["Beast mode", "run"]);
+    else if (p.rush && !p.td && p.gain >= 20) t.push(["Rip", "run"]);
+    if (p.wideOpen) t.push(["Wide open", "open"]);
+    tags[p.n] = t; ph = h; pa = a;
+  }
+  if (meta.status === "final" && meta.homeScore !== meta.awayScore) {
+    const w = meta.homeScore > meta.awayScore ? "Home" : "Away", n = lastLead[w];
+    if (n != null) tags[n] = tags[n].map(x => x[0] === "Lead-taking" ? ["Game-winning", "win"] : x);
+  }
+  return tags;
+}
+
+function teamStats(asc, players, flags) {
+  const blank = () => ({ yds: 0, pass: 0, rush: 0, rushAtt: 0, passAtt: 0, cmp: 0, top: 0, fd: 0, a3: 0, c3: 0, a4: 0, c4: 0, rzT: 0, rzTD: 0, to: 0,
+    pen: 0, penY: 0, sacks: 0, defTD: 0, ints: 0, tfl: 0, pd: 0, safeties: 0, fgm: 0, fga: 0, rating: 0 });
+  const S = { Home: blank(), Away: blank() };
+  const other = s => s === "Home" ? "Away" : "Home";
+  for (const p of Object.values(players)) { const s = p.stats || {}, T = S[p.team]; if (!T) continue;
+    T.pass += s.PYds || 0; T.rush += s.RushYds || 0; T.rushAtt += s.Car || 0; T.passAtt += s.Att || 0; T.cmp += s.Cmp || 0; T.to += s.Int || 0;
+    T.sacks += s.Sack || 0; T.ints += s.DInt || 0; T.pd += (s.PBU || 0) + (s.DInt || 0); T.rating += p.rating || 0; }
+  let prev = null, drive = null;
+  const closeDrive = () => { if (drive && drive.rz) { S[drive.off].rzT++; if (drive.td) S[drive.off].rzTD++; } };
+  for (const p of asc) {
+    const T = S[p.off]; if (!T) continue;
+    const snap = p.rush || p.pass || p.sack;
+    // time of possession: clock that ran since the previous play, credited to this play's offense
+    const now = secs(p.clock);
+    const was = prev && prev.q === p.q ? secs(prev.clock) : (p.q >= 5 ? 240 : 240);
+    if (was >= now) T.top += was - now;
+    if (snap && p.fd) T.fd++;
+    if (snap && p.down === 3) { T.a3++; if (p.fd) T.c3++; }
+    if (snap && p.down === 4) { T.a4++; if (p.fd) T.c4++; }
+    if (p.rush && p.gain < 0) S[other(p.off)].tfl++;
+    if (p.turnover && p.kind === "td") S[other(p.off)].defTD++;
+    if (p.kind === "safety") S[other(p.off)].safeties++;
+    if (p.kind === "fg" || p.kind === "fgmiss") { T.fga++; if (p.kind === "fg") T.fgm++; }
+    if (!drive || drive.off !== p.off) { closeDrive(); drive = { off: p.off, rz: false, td: false }; }
+    if (p.redzone || (p.ballOn != null && (p.off === "Home" ? p.ballOn : 100 - p.ballOn) >= 80)) drive.rz = true;
+    if (p.td && !p.turnover) drive.td = true;
+    prev = p;
+  }
+  closeDrive();
+  for (const f of Object.values(flags || {})) { if (S[f.team]) { S[f.team].pen++; S[f.team].penY += f.yards || 0; } }
+  for (const k of ["Home", "Away"]) S[k].yds = S[k].pass + S[k].rush;
+  return S;
+}
+
 // ---------------- one game ----------------
-function showGame(id, tab = "feed", pkey = null) {
+let currentGame = "";
+function showGame(id, tab = "feed", sub = null) {
   topbar.innerHTML = `<a class="back" href="#/">‹ Games</a><span class="brand" style="margin-left:auto">Gridiron <b>Legends</b></span>`;
   listen(ref(db, "games/" + id), g => {
     if (!g || !g.meta) { app.innerHTML = `<div class="empty"><strong>Game not found</strong>It may still be starting — the first play creates it.</div>`; return; }
-    const m = g.meta, plays = Object.values(g.plays || {}).sort((a, b) => b.n - a.n), players = g.players || {};
+    const m = g.meta, players = g.players || {}, flags = g.flags || {};
+    const asc = Object.values(g.plays || {}).sort((a, b) => a.n - b.n), desc = [...asc].reverse();
     const T = s => s === "Home" ? m.home : m.away;
+    const tags = tagPlays(asc, m);
     const tabs = [["feed", "Feed"], ["game", "Game"], ["away", m.away?.abbr || "Away"], ["home", m.home?.abbr || "Home"], ["perf", "Performances"]];
-    let body = "";
-    if (tab === "feed") body = feed(plays, T);
-    else if (tab === "game") body = gameTab(m, plays, players);
-    else if (tab === "home" || tab === "away") body = teamTab(tab === "home" ? "Home" : "Away", players, m, id);
-    else body = perfTab(id, players, plays, T, pkey);
+    let body;
+    if (tab === "feed") body = desc.length ? desc.map(p => playRow(p, T, id, tags)).join("") : `<div class="empty"><strong>Waiting for the first snap</strong>Plays appear here the moment they end.</div>`;
+    else if (tab === "game") body = gameTab(m, asc, players, flags);
+    else if (tab === "home" || tab === "away") body = teamTab(tab === "home" ? "Home" : "Away", sub === "def" ? "def" : "off", players, m, id, asc, flags);
+    else body = perfTab(id, players, desc, T, sub, tags);
     app.innerHTML = board(m) + `<nav class="tabs">${tabs.map(([k, l]) => `<a class="${k === tab ? "on" : ""}" href="#/game/${esc(id)}/${k}">${esc(l)}</a>`).join("")}</nav>` + body;
   });
 }
 
 function board(m) {
-  const live = m.status === "live";
-  const homeAtt = 1; // home team attacks toward the right end zone
-  const dirHome = m.poss === "Home";
-  const ball = Math.max(0, Math.min(100, m.ballOn ?? 50));
-  const fdYard = dirHome ? Math.min(100, ball + (m.toGo || 10)) : Math.max(0, ball - (m.toGo || 10));
-  const pct = y => 6 + y * 0.88; // leave room for end zones
-  const start = dirHome ? 0 : ball, width = dirHome ? ball : 100 - ball;
-  const dd = live ? `${ORD[m.down] || ""} & ${m.toGo} ${m.ballOn != null ? "" : ""}` : (m.moment ? "Moment" : "");
-  return `<section class="board">
-    <div class="row">
+  const live = m.status === "live", ball = Math.max(0, Math.min(100, m.ballOn ?? 50)), home = m.poss === "Home";
+  const fd = home ? Math.min(100, ball + (m.toGo || 10)) : Math.max(0, ball - (m.toGo || 10));
+  const at = y => 6 + y * 0.88;
+  return `<section class="board"><div class="row">
       <div class="team">${badge(m.away, "lg")}<div><div class="pts">${m.awayScore ?? 0}${m.poss === "Away" && live ? `<span class="poss">●</span>` : ""}</div><div class="city">${esc(m.away?.city)} ${esc(m.away?.name)}</div></div></div>
-      <div class="clock"><span class="${live ? "live" : ""}">${live ? `${qName(m.q)} ${esc(m.clock)}` : "Final"}</span><span class="dd">${esc(dd)}</span></div>
+      <div class="clock"><span class="${live ? "live" : ""}">${live ? `${qName(m.q)} ${esc(m.clock)}` : "Final"}</span><span class="dd">${live ? `${ORD[m.down] || ""} & ${m.toGo}` : (m.moment ? "Moment" : "")}</span></div>
       <div class="team r">${badge(m.home, "lg")}<div><div class="pts">${m.poss === "Home" && live ? `<span class="poss">●</span>` : ""}${m.homeScore ?? 0}</div><div class="city">${esc(m.home?.city)} ${esc(m.home?.name)}</div></div></div>
     </div>
-    ${live ? `<div class="field" aria-label="Ball on the ${ball} yard line">
-      <span class="ez" style="left:0;background:${esc(m.home?.color)}"></span><span class="ez" style="right:0;background:${esc(m.away?.color)}"></span>
-      <span class="drive" style="left:${pct(start)}%;width:${width * 0.88}%"></span>
-      <span class="fd" style="left:${pct(fdYard)}%"></span><span class="ball" style="left:${pct(ball)}%"></span></div>
+    ${live ? `<div class="field" aria-label="Ball on the ${Math.round(ball)} yard line"><span class="ez" style="left:0;background:${esc(m.home?.color)}"></span><span class="ez" style="right:0;background:${esc(m.away?.color)}"></span>
+      <span class="drive" style="left:${at(home ? 0 : ball)}%;width:${(home ? ball : 100 - ball) * 0.88}%"></span><span class="fd" style="left:${at(fd)}%"></span><span class="ball" style="left:${at(ball)}%"></span></div>
       <div class="yards"><span>G</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span><span>G</span></div>` : ""}
   </section>`;
 }
 
-function playRow(p, T, gid) {
-  const off = T(p.off);
-  const link = w => w ? `<a href="#/game/${esc(gid)}/perf/${esc(w.key)}">${esc(w.name)}</a>` : "";
+function playRow(p, T, gid, tags) {
+  const off = T(p.off), link = w => w ? `<a href="#/game/${esc(gid)}/perf/${esc(w.key)}">${esc(w.name)}</a>` : "";
+  const scoring = (p.td && !p.turnover) || p.kind === "fg";
+  const chips = (tags?.[p.n] || []).map(([l, c]) => `<span class="chip ${c}">${l}</span>`).join("");
+  const unit = !p.primary && (p.kind === "fg" || p.kind === "fgmiss") ? `<div class="who">${esc(off?.city)} ${esc(off?.name)} <span>field goal unit</span></div>` : "";
   return `<article class="play">
     <div>${badge(off)}</div>
     <div>
-      <div class="meta"><span>${p.awayScore ?? 0}–${p.homeScore ?? 0}</span><span>${qName(p.q)} ${esc(p.clock)}</span><span>${ORD[p.down] || ""} & ${p.toGo}</span>${p.call ? `<span class="call">${esc(p.call)}</span>` : ""}</div>
-      <h3 class="${p.td ? "td" : p.turnover ? "to" : ""}">${esc(p.title)}</h3>
-      ${p.primary ? `<div class="who">${link(p.primary)} <span>${esc(p.primary.line)}</span></div>` : ""}
+      <div class="meta"><span>${p.awayScore ?? 0}–${p.homeScore ?? 0}</span><span>${qName(p.q)} ${esc(p.clock)}</span><span>${ORD[p.down] || ""} & ${Math.round(p.toGo)}</span></div>
+      <h3 class="${scoring ? "sc" : p.turnover ? "to" : ""}">${esc(whole(p.title))}${chips}</h3>
+      ${p.primary ? `<div class="who">${link(p.primary)} <span>${esc(p.primary.line)}</span></div>` : unit}
       ${p.secondary ? `<div class="who2">${link(p.secondary)} <span>${esc(p.secondary.line)}</span></div>` : ""}
     </div>
     <div class="val ${cls(p.value)}" title="Change in expected points">${sign(p.value)}</div>
   </article>`;
 }
-let currentGame = "";
-function feed(plays, T) {
-  return plays.length ? plays.map(p => playRow(p, T, currentGame)).join("") : `<div class="empty"><strong>Waiting for the first snap</strong>Plays appear here the moment they end.</div>`;
-}
 
-function teamTotals(players, side) {
-  const t = { pass: 0, rush: 0, int: 0, sack: 0, tkl: 0, pbu: 0, dint: 0, rating: 0 };
-  Object.values(players).filter(p => p.team === side).forEach(p => { const s = p.stats || {};
-    t.pass += s.PYds || 0; t.rush += s.RushYds || 0; t.int += s.Int || 0; t.sack += s.Sack || 0; t.tkl += s.Tkl || 0; t.pbu += s.PBU || 0; t.dint += s.DInt || 0; t.rating += p.rating || 0; });
-  t.total = t.pass + t.rush; return t;
-}
-function gameTab(m, plays, players) {
-  const A = teamTotals(players, "Away"), H = teamTotals(players, "Home");
-  const rows = [["Total yards", A.total, H.total], ["Passing yards", A.pass, H.pass], ["Rushing yards", A.rush, H.rush], ["Turnovers", A.int, H.int], ["Sacks", A.sack, H.sack], ["Tackles", A.tkl, H.tkl], ["Team rating", +A.rating.toFixed(1), +H.rating.toFixed(1)]];
-  // scoring by quarter from the score after each play
+function gameTab(m, asc, players, flags) {
+  // box score by quarter
   const byQ = { Away: {}, Home: {} }; let pa = 0, ph = 0;
-  [...plays].sort((a, b) => a.n - b.n).forEach(p => { const q = qName(p.q);
-    byQ.Away[q] = (byQ.Away[q] || 0) + Math.max(0, (p.awayScore ?? pa) - pa); byQ.Home[q] = (byQ.Home[q] || 0) + Math.max(0, (p.homeScore ?? ph) - ph);
-    pa = p.awayScore ?? pa; ph = p.homeScore ?? ph; });
-  const qs = ["Q1", "Q2", "Q3", "Q4"].concat(plays.some(p => p.q >= 5) ? ["OT"] : []);
+  for (const p of asc) { const q = qName(p.q), h = p.homeScore ?? ph, a = p.awayScore ?? pa, bh = p.preHome ?? ph, ba = p.preAway ?? pa;
+    byQ.Home[q] = (byQ.Home[q] || 0) + Math.max(0, h - bh); byQ.Away[q] = (byQ.Away[q] || 0) + Math.max(0, a - ba); ph = h; pa = a; }
+  let qs = ["Q1", "Q2", "Q3", "Q4"]; if (asc.some(p => p.q >= 5)) qs.push("OT"); if (asc.some(p => p.q >= 6)) qs.push("2OT");
   const startA = (m.awayScore || 0) - qs.reduce((s, q) => s + (byQ.Away[q] || 0), 0), startH = (m.homeScore || 0) - qs.reduce((s, q) => s + (byQ.Home[q] || 0), 0);
   const cols = (startA || startH ? ["Start"] : []).concat(qs);
-  const cell = (side, q) => q === "Start" ? (side === "Away" ? startA : startH) : (byQ[side][q] || 0);
-  return `<h2>Scoring</h2><div class="scroll"><table><tr><th>Team</th>${cols.map(c => `<th class="n">${c}</th>`).join("")}<th class="n">Total</th></tr>
-    ${["Away", "Home"].map(s => `<tr><td>${badge(s === "Home" ? m.home : m.away, "sm")} ${esc((s === "Home" ? m.home : m.away)?.name)}</td>${cols.map(c => `<td class="n">${cell(s, c)}</td>`).join("")}<td class="n" style="color:var(--gold)">${s === "Home" ? m.homeScore : m.awayScore}</td></tr>`).join("")}</table></div>
-    <h2>Team comparison</h2>
-    ${rows.map(([l, a, h]) => { const mx = Math.max(1, Math.abs(a), Math.abs(h));
-      return `<div class="cmp"><div class="lbl">${l}</div><div class="n">${a}</div>
-        <div class="bars"><i class="a" style="width:${Math.abs(a) / mx * 100}%;background:${esc(m.away?.color)}"></i><i class="h" style="width:${Math.abs(h) / mx * 100}%;background:${esc(m.home?.color)}"></i></div>
-        <div class="n r">${h}</div></div>`; }).join("")}`;
+  const cell = (s, q) => q === "Start" ? (s === "Away" ? startA : startH) : (byQ[s][q] || 0);
+  const label = q => ({ Q1: "1st", Q2: "2nd", Q3: "3rd", Q4: "4th" }[q] || q);
+  // biggest leads + lead changes
+  const big = { Home: { v: 0, q: "" }, Away: { v: 0, q: "" } }; let changes = 0, leader = 0;
+  for (const p of asc) { const d = (p.homeScore ?? 0) - (p.awayScore ?? 0);
+    if (d > big.Home.v) big.Home = { v: d, q: qName(p.q) }; if (-d > big.Away.v) big.Away = { v: -d, q: qName(p.q) };
+    const s = Math.sign(d); if (s !== 0 && leader !== 0 && s !== leader) changes++; if (s !== 0) leader = s; }
+  const S = teamStats(asc, players, flags), A = S.Away, H = S.Home;
+  const rows = [
+    ["Total yards", A.yds, H.yds], ["Time of possession", mmss(A.top), mmss(H.top), A.top, H.top], ["First downs", A.fd, H.fd],
+    ["3rd down", `${A.c3}/${A.a3}`, `${H.c3}/${H.a3}`, pct(A.c3, A.a3), pct(H.c3, H.a3)], ["4th down", `${A.c4}/${A.a4}`, `${H.c4}/${H.a4}`, pct(A.c4, A.a4), pct(H.c4, H.a4)],
+    ["Red zone", `${A.rzTD}/${A.rzT}`, `${H.rzTD}/${H.rzT}`, pct(A.rzTD, A.rzT), pct(H.rzTD, H.rzT)], ["Turnovers", A.to, H.to],
+    ["Rushing yards", A.rush, H.rush], ["Passing yards", A.pass, H.pass],
+    ["Rushing yards / attempt", avg(A.rush, A.rushAtt), avg(H.rush, H.rushAtt)], ["Passing yards / attempt", avg(A.pass, A.passAtt), avg(H.pass, H.passAtt)],
+    ["Field goals", `${A.fgm}/${A.fga}`, `${H.fgm}/${H.fga}`, A.fgm, H.fgm], ["Penalties", A.pen, H.pen], ["Penalty yards", A.penY, H.penY],
+    ["Sacks", A.sacks, H.sacks], ["Defensive TDs", A.defTD, H.defTD], ["Interceptions", A.ints, H.ints], ["Tackles for loss", A.tfl, H.tfl],
+    ["Passes defended", A.pd, H.pd], ["Safeties", A.safeties, H.safeties]];
+  return `<h2>Box</h2><div class="scroll"><table><tr><th></th>${cols.map(c => `<th class="n">${label(c)}</th>`).join("")}<th class="n">Total</th></tr>
+      ${["Away", "Home"].map(s => { const t = s === "Home" ? m.home : m.away; return `<tr><td>${badge(t, "sm")} ${esc(t?.abbr)}</td>${cols.map(c => `<td class="n">${cell(s, c)}</td>`).join("")}<td class="n" style="color:var(--gold)">${s === "Home" ? m.homeScore : m.awayScore}</td></tr>`; }).join("")}
+    </table></div>
+    <h2>Biggest leads</h2><div class="leads"><span>${badge(m.away, "sm")}<b>${big.Away.v}</b>${big.Away.v ? `at ${big.Away.q}` : ""}</span><span>${badge(m.home, "sm")}<b>${big.Home.v}</b>${big.Home.v ? `at ${big.Home.q}` : ""}</span><span>${changes} lead change${changes === 1 ? "" : "s"}</span></div>
+    <h2>Head-to-head</h2><div class="h2h"><div class="heads">${badge(m.away, "sm")}${badge(m.home, "sm")}</div>
+    ${rows.map(([l, a, h, an, hn]) => { const x = Math.max(0, +(an ?? a) || 0), y = Math.max(0, +(hn ?? h) || 0), tot = x + y;
+      const wa = tot ? x / tot * 100 : 50;
+      return `<div class="r"><span class="l">${a}</span><span class="lbl">${l}</span><span class="rv">${h}</span></div>
+        <div class="bar"><i style="width:${wa}%;background:${esc(m.away?.color)}"></i><i style="width:${100 - wa}%;background:${esc(m.home?.color)}"></i></div>`; }).join("")}</div>`;
 }
 
-function line(p) { const s = p.stats || {}, out = [];
-  if (s.Att) out.push(`${s.Cmp || 0}/${s.Att} · ${s.PYds || 0} pass yds · ${s.PTD || 0} TD · ${s.Int || 0} INT`);
-  if (s.Car) out.push(`${s.Car} car · ${s.RushYds || 0} rush yds${s.RushTD ? ` · ${s.RushTD} TD` : ""}`);
-  if (s.Rec || s.Tgt) out.push(`${s.Rec || 0}/${s.Tgt || 0} rec · ${s.RecYds || 0} yds${s.RecTD ? ` · ${s.RecTD} TD` : ""}`);
-  if (s.Tkl || s.Sack || s.DInt || s.PBU) out.push(`${s.Tkl || 0} tkl${s.Sack ? ` · ${s.Sack} sack` : ""}${s.DInt ? ` · ${s.DInt} INT` : ""}${s.PBU ? ` · ${s.PBU} PBU` : ""}`);
-  return out.join("  |  ") || "No stats yet"; }
-function teamTab(side, players, m, gid) {
-  const list = Object.entries(players).filter(([, p]) => p.team === side).sort((a, b) => (b[1].rating || 0) - (a[1].rating || 0));
-  if (!list.length) return `<div class="empty"><strong>No stats yet</strong>Players show up after they're involved in a play.</div>`;
-  return `<h2>${esc((side === "Home" ? m.home : m.away)?.city)} ${esc((side === "Home" ? m.home : m.away)?.name)}</h2><div class="scroll"><table>
-    <tr><th>Player</th><th>Pos</th><th>Stats</th><th class="n">Rating</th></tr>
-    ${list.map(([k, p]) => `<tr><td><a href="#/game/${esc(gid)}/perf/${esc(k)}">${esc(p.name)}</a>${p.human ? ` <span class="tag">Player</span>` : ""}</td><td>${esc(posOf(p))}</td><td style="color:var(--mute)">${esc(line(p))}</td><td class="n ${cls(p.rating || 0)}">${sign(p.rating || 0)}</td></tr>`).join("")}
-  </table></div>`;
+const cells = list => `<div class="strip">${list.map(([v, l]) => `<div>${v}<small>${l}</small></div>`).join("")}</div>`;
+function offenseCells(p) { const s = p.stats || {};
+  if (p.slot === "QB") return [[`${s.Cmp || 0}/${s.Att || 0}`, "C/ATT"], [s.PYds || 0, "PYDS"], [avg(s.PYds || 0, s.Att || 0), "PAVG"], [s.PTD || 0, "PTD"], [s.Int || 0, "INT"],
+    [passerRating(s.Cmp || 0, s.Att || 0, s.PYds || 0, s.PTD || 0, s.Int || 0).toFixed(1), "EFF"], [s.Car || 0, "CAR"], [s.RushYds || 0, "RUYDS"], [avg(s.RushYds || 0, s.Car || 0), "RUAVG"], [s.RushTD || 0, "RUTD"], [sign(p.rating || 0), "RTG"]];
+  if (p.slot === "LG" || p.slot === "RG") return [[s.Snaps || 0, "SNAPS"], [s.SackAlw || 0, "SACKS ALW"], [s.TeamRush || 0, "TEAM RUYDS"], [sign(p.rating || 0), "RTG"]];
+  return [[(s.RushYds || 0) + (s.RecYds || 0), "YDS"], [(s.RushTD || 0) + (s.RecTD || 0), "TD"], [s.Car || 0, "CAR"], [s.RushYds || 0, "RUYDS"], [avg(s.RushYds || 0, s.Car || 0), "RUAVG"], [s.RushTD || 0, "RUTD"],
+    [s.Tgt || 0, "TGT"], [s.Rec || 0, "REC"], [s.RecYds || 0, "REYDS"], [avg(s.RecYds || 0, s.Rec || 0), "REAVG"], [s.RecTD || 0, "RETD"], [sign(p.rating || 0), "RTG"]]; }
+function defenseCells(p) { const s = p.stats || {};
+  return [[s.Tkl || 0, "TKL"], [s.Sack || 0, "SACK"], [s.DInt || 0, "INT"], [s.PBU || 0, "PBU"], [(s.PBU || 0) + (s.DInt || 0), "PD"], [sign(p.rating || 0), "RTG"]]; }
+const ORDER = { QB: 0, RB: 1, WR1: 2, WR2: 3, WR3: 4, LG: 5, RG: 6 };
+function teamTab(side, view, players, m, gid, asc, flags) {
+  const t = side === "Home" ? m.home : m.away, S = teamStats(asc, players, flags)[side];
+  const list = Object.entries(players).filter(([, p]) => p.team === side);
+  if (!list.length) return `<div class="empty"><strong>No players yet</strong>Players show up after the first snap.</div>`;
+  const head = `<section class="teamhead"><a href="#/game/${esc(gid)}/perf" title="Performances">${badge(t, "lg")}</a>
+    <div><div class="nm">${esc(t?.city)} ${esc(t?.name)}<small class="${cls(S.rating)}">${sign(S.rating)}</small></div>
+    ${cells([[S.yds, "YDS"], [mmss(S.top), "TOP"], [S.fd, "FD"], [`${S.c3}/${S.a3}`, "3D"], [`${S.rzTD}/${S.rzT}`, "RZ"], [S.to, "TO"], [S.rush, "RUYDS"], [S.pass, "PYDS"],
+      [avg(S.rush, S.rushAtt), "RUAVG"], [avg(S.pass, S.passAtt), "PAVG"], [S.pen, "PTY"], [S.penY, "PTYYDS"]])}</div></section>`;
+  const sorted = view === "off"
+    ? list.sort((a, b) => (ORDER[a[1].slot] ?? 9) - (ORDER[b[1].slot] ?? 9) || (b[1].rating || 0) - (a[1].rating || 0))
+    : list.sort((a, b) => ((b[1].stats?.Tkl || 0) - (a[1].stats?.Tkl || 0)) || (b[1].rating || 0) - (a[1].rating || 0));
+  const rows = sorted.map(([k, p]) => `<div class="prow"><a href="#/game/${esc(gid)}/perf/${esc(k)}" title="${esc(p.name)}">${avatar(p.name, t)}</a>
+      <div><div class="nm"><a href="#/game/${esc(gid)}/perf/${esc(k)}">${esc(p.name)}</a> <span>${esc(view === "off" ? posOf(p) : p.def)}</span><em class="${cls(p.rating || 0)}">${sign(p.rating || 0)}</em>${p.human ? `<span class="you">Player</span>` : ""}</div>
+      ${cells(view === "off" ? offenseCells(p) : defenseCells(p))}</div></div>`).join("");
+  return head + `<nav class="tabs sub"><a class="${view === "off" ? "on" : ""}" href="#/game/${esc(gid)}/${side.toLowerCase()}/off">Offense</a><a class="${view === "def" ? "on" : ""}" href="#/game/${esc(gid)}/${side.toLowerCase()}/def">Defense</a></nav>` + rows;
 }
 
-function statGrid(p) { const s = p.stats || {}, items = [];
-  const add = (v, l) => items.push(`<div>${v}<small>${l}</small></div>`);
-  if (s.Att) { add(`${s.Cmp || 0}/${s.Att}`, "C/ATT"); add(s.PYds || 0, "PYDS"); add(((s.PYds || 0) / s.Att).toFixed(1), "Y/A"); add(s.PTD || 0, "PTD"); add(s.Int || 0, "INT"); }
-  if (s.Car) { add(s.Car, "CAR"); add(s.RushYds || 0, "RUYDS"); add(((s.RushYds || 0) / s.Car).toFixed(1), "RUAVG"); add(s.RushTD || 0, "RUTD"); }
+function statGrid(p) { const s = p.stats || {}, items = [], add = (v, l) => items.push(`<div>${v}<small>${l}</small></div>`);
+  if (s.Att) { add(`${s.Cmp || 0}/${s.Att}`, "C/ATT"); add(s.PYds || 0, "PYDS"); add(avg(s.PYds || 0, s.Att), "Y/A"); add(s.PTD || 0, "PTD"); add(s.Int || 0, "INT"); add(passerRating(s.Cmp || 0, s.Att, s.PYds || 0, s.PTD || 0, s.Int || 0).toFixed(1), "EFF"); }
+  if (s.Car) { add(s.Car, "CAR"); add(s.RushYds || 0, "RUYDS"); add(avg(s.RushYds || 0, s.Car), "RUAVG"); add(s.RushTD || 0, "RUTD"); }
   if (s.Tgt || s.Rec) { add(s.Tgt || 0, "TGT"); add(s.Rec || 0, "REC"); add(s.RecYds || 0, "REYDS"); add(s.RecTD || 0, "RETD"); }
   if (s.Snaps && (p.slot === "LG" || p.slot === "RG")) { add(s.Snaps, "SNAPS"); add(s.SackAlw || 0, "SACKS ALW"); }
   if (s.Tkl || s.Sack || s.DInt || s.PBU) { add(s.Tkl || 0, "TKL"); add(s.Sack || 0, "SACK"); add(s.DInt || 0, "INT"); add(s.PBU || 0, "PBU"); }
@@ -301,33 +396,27 @@ function statGrid(p) { const s = p.stats || {}, items = [];
   return `<div class="grid">${items.join("")}</div>`; }
 function quarterChart(byQ) {
   const qs = ["Q1", "Q2", "Q3", "Q4"].concat(byQ && byQ.Q5 != null ? ["Q5"] : []);
-  const vals = qs.map(q => +(byQ?.[q] || 0)); const mx = Math.max(0.5, ...vals.map(Math.abs));
-  const W = 700, H = 190, mid = 100, bw = W / qs.length;
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rating by quarter">
-    <line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="var(--rule)"/>
+  const vals = qs.map(q => +(byQ?.[q] || 0)), mx = Math.max(0.5, ...vals.map(Math.abs)), W = 700, H = 190, mid = 100, bw = W / qs.length;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rating by quarter"><line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="var(--rule)"/>
     ${vals.map((v, i) => { const h = Math.abs(v) / mx * 70, x = i * bw + bw * 0.12, w = bw * 0.76;
       return `<rect x="${x}" y="${v >= 0 ? mid - h : mid}" width="${w}" height="${Math.max(2, h)}" rx="3" fill="${v >= 0 ? "var(--gold)" : "var(--flag)"}"/>
       <text x="${x + w / 2}" y="${v >= 0 ? mid - h - 8 : mid + h + 18}" text-anchor="middle" fill="var(--ink)" font-family="Barlow Condensed" font-weight="700" font-size="18">${v.toFixed(2)}</text>
-      <text x="${x + w / 2}" y="${H - 4}" text-anchor="middle" fill="var(--mute)" font-family="Barlow" font-size="14">${qs[i] === "Q5" ? "OT" : qs[i]}</text>`; }).join("")}
-  </svg>`;
+      <text x="${x + w / 2}" y="${H - 4}" text-anchor="middle" fill="var(--mute)" font-family="Barlow" font-size="14">${qs[i] === "Q5" ? "OT" : qs[i]}</text>`; }).join("")}</svg>`;
 }
-function perfTab(gid, players, plays, T, pkey) {
+function perfTab(gid, players, desc, T, pkey, tags) {
   const list = Object.entries(players).filter(([, p]) => Object.keys(p.stats || {}).some(k => k !== "Snaps") || p.rating).sort((a, b) => (b[1].rating || 0) - (a[1].rating || 0));
   if (!list.length) return `<div class="empty"><strong>No performances yet</strong>Ratings appear as soon as players make plays.</div>`;
-  const key = pkey && players[pkey] ? pkey : list[0][0], p = players[key], team = T(p.team);
-  const mine = plays.filter(pl => pl.players && pl.players[key] != null || pl.primary?.key === key || pl.secondary?.key === key)
-    .sort((a, b) => Math.abs((b.players?.[key]) || 0) - Math.abs((a.players?.[key]) || 0)).slice(0, 8);
-  const s = p.stats || {};
+  const key = pkey && players[pkey] ? pkey : list[0][0], p = players[key], team = T(p.team), s = p.stats || {};
+  const mine = desc.filter(pl => (pl.players && pl.players[key] != null) || pl.primary?.key === key || pl.secondary?.key === key)
+    .sort((a, b) => Math.abs(b.players?.[key] || 0) - Math.abs(a.players?.[key] || 0)).slice(0, 8);
   const headline = s.Att ? `${s.PYds || 0}<small>pyds</small>${s.PTD || 0}<small>ptd</small>${s.Int || 0}<small>int</small>`
     : s.Car ? `${s.RushYds || 0}<small>yds</small>${s.RushTD || 0}<small>td</small>${s.Rec || 0}<small>rec</small>`
     : (s.Rec || s.Tgt) ? `${s.RecYds || 0}<small>yds</small>${s.Rec || 0}<small>rec</small>${s.RecTD || 0}<small>td</small>`
     : `${s.Tkl || 0}<small>tkl</small>${s.Sack || 0}<small>sack</small>${s.DInt || 0}<small>int</small>`;
-  return `<div class="strip">${list.map(([k, x]) => `<a class="av ${k === key ? "on" : ""}" href="#/game/${esc(gid)}/perf/${esc(k)}" title="${esc(x.name)}">
-      <span class="badge" style="background:${esc(T(x.team)?.color)};color:${esc(T(x.team)?.color2)}">${esc(initials(x.name))}</span><em class="${cls(x.rating || 0)}">${(x.rating || 0).toFixed(1)}</em></a>`).join("")}</div>
+  return `<div class="avstrip">${list.map(([k, x]) => `<a class="av ${k === key ? "on" : ""}" href="#/game/${esc(gid)}/perf/${esc(k)}" title="${esc(x.name)}">${avatar(x.name, T(x.team))}<em class="${cls(x.rating || 0)}">${(x.rating || 0).toFixed(1)}</em></a>`).join("")}</div>
     <section class="hero">${badge(team, "lg")}<div><div class="nm">${esc(p.name)} · ${esc(posOf(p))} / ${esc(p.def)}</div><div class="big">${headline}</div></div><div class="rt ${cls(p.rating || 0)}">${sign(p.rating || 0)}</div></section>
-    ${statGrid(p)}
-    <h2>Rating by quarter</h2>${quarterChart(p.byQ)}
-    <h2>Plays</h2>${mine.length ? mine.map(pl => playRow({ ...pl, value: pl.players?.[key] ?? pl.value }, T, gid)).join("") : `<div class="empty">No plays yet.</div>`}`;
+    ${statGrid(p)}<h2>Rating by quarter</h2>${quarterChart(p.byQ)}
+    <h2>Plays</h2>${mine.length ? mine.map(pl => playRow({ ...pl, value: pl.players?.[key] ?? pl.value }, T, gid, tags)).join("") : `<div class="empty">No plays yet.</div>`}`;
 }
 
 // ---------------- router ----------------
