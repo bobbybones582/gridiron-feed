@@ -157,7 +157,7 @@ svg.chart { width: 100%; height: 190px; display: block; }
 
 <script type="module">
 // ============ SETUP: paste your Firebase Realtime Database URL ============
-const DB_URL = "https://gridiron-feed-default-rtdb.firebaseio.com/";
+const DB_URL = "https://YOUR-PROJECT-default-rtdb.firebaseio.com";
 // ==========================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, onValue, off, query, orderByChild, limitToLast, get, set, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -233,7 +233,8 @@ function describe(p, tg) {
 }
 const boostOf = tg => (BOOST[tg?.score] || 0) + (BOOST[tg?.style] || 0);
 // play value shown in the feed: change in expected points + a boost for big moments (for the team that made them)
-function shownValue(p, tg) { const b = boostOf(tg); return (p.value || 0) + (p.turnover ? -b : b); }
+function shownValue(p, tg) { if (p.call === "Kneel" || p.title === "Kneel") return 0; // kneeling out the clock is neutral
+  const b = boostOf(tg); return (p.value || 0) + (p.turnover ? -b : b); }
 
 // how eventful was the game? (out of 10, shown once it's final)
 function excitement(asc, m) {
