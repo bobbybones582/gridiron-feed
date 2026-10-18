@@ -84,6 +84,7 @@ a:hover > .badge { border-color: var(--gold); }
 .play .who { font: 600 14px var(--body); }
 .play .who span, .play .who2 span { color: var(--mute); font-weight: 500; }
 .play .who2 { font: 500 13px var(--body); color: var(--mute); }
+.play .try { font: 600 13px var(--body); margin-top: 3px; }
 .play .who a:hover, .play .who2 a:hover { text-decoration: underline; }
 .val { font: 800 18px var(--cond); align-self: start; padding-top: 2px; min-width: 52px; text-align: right; }
 .pos { color: var(--turf); } .neg { color: var(--flag); } .zero { color: var(--mute); }
@@ -418,6 +419,7 @@ function playRow(p, ctx, valueOverride) {
       <h3 class="${scoring ? "sc" : p.turnover ? "to" : ""}">${esc(describe(p, tg))}</h3>
       ${p.primary ? `<div class="who">${link(p.primary)} <span>${esc(p.primary.line)}</span></div>` : unit}
       ${p.secondary ? `<div class="who2">${link(p.secondary)} <span>${esc(p.secondary.line)}</span></div>` : ""}
+      ${p.try ? `<div class="try">${p.try.good ? "🟢" : "🔴"} ${p.try.kind === "2pt" ? "2pt Conversion" : "Extra Point"} is ${p.try.good ? "Good" : "No Good"}</div>` : ""}
     </div>
     <div class="val ${cls(v)}" title="Play rating">${sign(v)}</div>
   </article>`;
