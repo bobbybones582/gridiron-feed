@@ -263,6 +263,7 @@ function excitement(asc, m) {
 function points(p) { const s = p.stats || {};
   let v = (s.PYds || 0) * 0.04 + (s.PTD || 0) * 4 - (s.Int || 0) * 2 + (s.RushYds || 0) * 0.1 + (s.RushTD || 0) * 6
     + (s.RecYds || 0) * 0.1 + (s.RecTD || 0) * 6 + (s.Rec || 0) * 0.5 + (s.Tkl || 0) + (s.Sack || 0) * 3 + (s.DInt || 0) * 4 + (s.PBU || 0) * 1.5;
+  if (p.unit === "ST") v += ((s.FG0 || 0) + (s.FG20 || 0) + (s.FG30 || 0)) * 3 + (s.FG40 || 0) * 4 + (s.FG50 || 0) * 5 + (s.XPM || 0);
   if (p.slot === "LG" || p.slot === "RG") v += (s.Snaps || 0) * 0.25 - (s.SackAlw || 0) * 2 + (s.TeamRush || 0) * 0.03;
   return v; }
 function buildPerf(asc, players, tags) {
@@ -461,7 +462,10 @@ function gameTab(ctx) {
 }
 
 const cells = list => `<div class="strip">${list.map(([v, l]) => `<div>${v}<small>${l}</small></div>`).join("")}</div>`;
-function offenseCells(p, pf) { const s = p.stats || {}, tail = [[one(pf.pts), "PTS"], [one(pf.rtg), "RTG"]];
+function kickerCells(p, pf) { const s = p.stats || {};
+  return [[`${s.FGM || 0}/${s.FGA || 0}`, "FG"], [s.FGA ? Math.round((s.FGM || 0) / s.FGA * 100) + "%" : "—", "FG%"], [`${s.XPM || 0}/${s.XPA || 0}`, "XP"], [s.FGLng || 0, "LNG"], [s.FGYds || 0, "FGYDS"],
+    [s.FG0 || 0, "0-19"], [s.FG20 || 0, "20-29"], [s.FG30 || 0, "30-39"], [s.FG40 || 0, "40-49"], [s.FG50 || 0, "50+"], [s.Punts || 0, "PUNTS"], [avg(s.PuntYds || 0, s.Punts || 0), "P AVG"], [one(pf.pts), "PTS"], [one(pf.rtg), "RTG"]]; }
+function offenseCells(p, pf) { if (p.unit === "ST") return kickerCells(p, pf); const s = p.stats || {}, tail = [[one(pf.pts), "PTS"], [one(pf.rtg), "RTG"]];
   if (p.slot === "QB") return [[`${s.Cmp || 0}/${s.Att || 0}`, "C/ATT"], [s.PYds || 0, "PYDS"], [avg(s.PYds || 0, s.Att || 0), "PAVG"], [s.PTD || 0, "PTD"], [s.Int || 0, "INT"],
     [passerRating(s.Cmp || 0, s.Att || 0, s.PYds || 0, s.PTD || 0, s.Int || 0).toFixed(1), "EFF"], [s.Car || 0, "CAR"], [s.RushYds || 0, "RUYDS"], [avg(s.RushYds || 0, s.Car || 0), "RUAVG"], [s.RushTD || 0, "RUTD"], ...tail];
   if (p.slot === "LG" || p.slot === "RG") return [[s.Snaps || 0, "SNAPS"], [s.SackAlw || 0, "SACKS ALW"], [s.TeamRush || 0, "TEAM RUYDS"], ...tail];
@@ -492,7 +496,8 @@ function teamTab(ctx, side, view) {
   return head + `<nav class="tabs sub"><a class="${view === "off" ? "on" : ""}" href="#/game/${esc(id)}/${side.toLowerCase()}/off">Offense</a><a class="${view === "def" ? "on" : ""}" href="#/game/${esc(id)}/${side.toLowerCase()}/def">Defense</a></nav>` + rows;
 }
 
-function statGrid(p, pf) { const s = p.stats || {}, items = [], add = (v, l) => items.push(`<div>${v}<small>${l}</small></div>`);
+function statGrid(p, pf) { if (p.unit === "ST") return `<div class="grid">${kickerCells(p, pf).map(([v, l]) => `<div>${v}<small>${l}</small></div>`).join("")}</div>`;
+  const s = p.stats || {}, items = [], add = (v, l) => items.push(`<div>${v}<small>${l}</small></div>`);
   if (s.Att) { add(`${s.Cmp || 0}/${s.Att}`, "C/ATT"); add(s.PYds || 0, "PYDS"); add(avg(s.PYds || 0, s.Att), "PAVG"); add(s.PTD || 0, "PTD"); add(s.Int || 0, "INT"); add(passerRating(s.Cmp || 0, s.Att, s.PYds || 0, s.PTD || 0, s.Int || 0).toFixed(1), "EFF"); }
   if (s.Car) { add(s.Car, "CAR"); add(s.RushYds || 0, "RUYDS"); add(avg(s.RushYds || 0, s.Car), "RUAVG"); add(s.RushTD || 0, "RUTD"); }
   if (s.Tgt || s.Rec) { add(s.Tgt || 0, "TGT"); add(s.Rec || 0, "REC"); add(s.RecYds || 0, "REYDS"); add(avg(s.RecYds || 0, s.Rec || 0), "REAVG"); add(s.RecTD || 0, "RETD"); }
@@ -522,7 +527,8 @@ function perfTab(ctx, pkey) {
   const key = pkey && players[pkey] ? pkey : list[0][0], p = players[key], team = T(p.team), s = p.stats || {}, pf = perf[key];
   const mine = desc.filter(pl => (pl.players && pl.players[key] != null) || pl.primary?.key === key || pl.secondary?.key === key)
     .sort((a, b) => Math.abs(b.players?.[key] || 0) - Math.abs(a.players?.[key] || 0)).slice(0, 8);
-  const headline = s.Att ? `${s.PYds || 0}<small>pyds</small>${s.PTD || 0}<small>ptd</small>${s.Int || 0}<small>int</small>`
+  const headline = p.unit === "ST" ? `${s.FGM || 0}/${s.FGA || 0}<small>fg</small>${s.FGLng || 0}<small>lng</small>${s.XPM || 0}/${s.XPA || 0}<small>xp</small>`
+    : s.Att ? `${s.PYds || 0}<small>pyds</small>${s.PTD || 0}<small>ptd</small>${s.Int || 0}<small>int</small>`
     : s.Car ? `${s.RushYds || 0}<small>yds</small>${s.RushTD || 0}<small>td</small>${s.Rec || 0}<small>rec</small>`
     : (s.Rec || s.Tgt) ? `${s.RecYds || 0}<small>yds</small>${s.Rec || 0}<small>rec</small>${s.RecTD || 0}<small>td</small>`
     : `${s.Tkl || 0}<small>tkl</small>${s.Sack || 0}<small>sack</small>${s.DInt || 0}<small>int</small>`;
