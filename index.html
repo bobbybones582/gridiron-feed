@@ -173,11 +173,13 @@ const whole = t => String(t ?? "").replace(/-?\d+\.\d+/g, m => Math.round(+m));
 const initials = n => String(n || "?").replace(/[^A-Za-z0-9 .]/g, "").split(/[ .]+/).filter(Boolean).slice(-2).map(w => w[0]).join("").toUpperCase() || "?";
 const badge = (t, size = "") => t ? `<span class="badge ${size}" style="background:${esc(t.color)};color:${esc(t.color2)}">${esc(t.abbr)}</span>` : "";
 const avatar = (name, t) => `<span class="badge" style="background:${esc(t?.color)};color:${esc(t?.color2)}">${esc(initials(name))}</span>`;
-const posOf = p => p ? (p.slot === "QB" ? "QB" : p.slot === "RB" ? "RB" : (p.slot || "").startsWith("WR") ? "WR" : (p.slot === "LG" || p.slot === "RG") ? "OL" : p.slot) : "";
+const posOf = p => p ? (p.unit === "Def" ? p.def : p.unit === "ST" ? "K/P" : p.slot === "QB" ? "QB" : p.slot === "RB" ? "RB" : (p.slot || "").startsWith("WR") ? "WR" : (p.slot === "LG" || p.slot === "RG") ? "OL" : p.slot) : "";
 const secs = c => { const [m, s] = String(c || "0:00").split(":").map(Number); return (m || 0) * 60 + (s || 0); };
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 const avg = (a, b) => b ? (a / b).toFixed(1) : "0.0";
+const STALE = 20 * 60;
+const isLive = x => !!x && x.status === "live" && !(x.updatedAt && Date.now() / 1000 - x.updatedAt > STALE);
 const compact = n => n >= 1e6 ? (n / 1e6).toFixed(1) + "m" : n >= 1e3 ? (n / 1e3).toFixed(1) + "k" : String(n || 0);
 const passerRating = (c, a, y, td, i) => { if (!a) return 0; const k = x => Math.min(2.375, Math.max(0, x));
   return (k((c / a - .3) * 5) + k((y / a - 3) * .25) + k(td / a * 20) + k(2.375 - i / a * 25)) / 6 * 100; };
@@ -211,7 +213,7 @@ function tagPlays(asc, meta) {
     else if (p.wideOpen) tg.style = "wide-open";
     tags[p.n] = tg; ph = h; pa = a;
   }
-  if (meta.status === "final" && meta.homeScore !== meta.awayScore) {
+  if (!isLive(meta) && meta.homeScore !== meta.awayScore) {
     const n = lastLead[meta.homeScore > meta.awayScore ? "Home" : "Away"];
     if (n != null) tags[n].score = "game-winning";
   }
@@ -298,7 +300,7 @@ function showGames() {
   topbar.innerHTML = `<a class="brand" href="#/">Gridiron <b>Legends</b></a>`;
   const draw = () => {
     let games = Object.entries(cache.index || {}).map(([id, g]) => ({ id, ...g })).sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
-    if (listFilter === "live") games = games.filter(g => g.status === "live");
+    if (listFilter === "live") games = games.filter(g => isLive(g));
     if (listFilter === "games") games = games.filter(g => !g.moment);
     if (listFilter === "moments") games = games.filter(g => g.moment);
     const f = (k, l) => `<button class="${listFilter === k ? "on" : ""}" data-f="${k}">${l}</button>`;
@@ -307,14 +309,14 @@ function showGames() {
       ${games.length ? `<div class="cards">${games.map(card).join("")}</div>` : `<div class="empty"><strong>No games yet</strong>Play a game or a Moment in Gridiron Legends and it shows up here.</div>`}</section>`;
     app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { listFilter = b.dataset.f; draw(); });
     // finished games without an excitement rating yet: work it out once and save it
-    games.filter(g => g.status === "final" && cache.ratings?.[g.id] == null && !rated.has(g.id)).slice(0, 6).forEach(g => { rated.add(g.id); rateGame(g.id); });
+    games.filter(g => !isLive(g) && cache.ratings?.[g.id] == null && !rated.has(g.id)).slice(0, 6).forEach(g => { rated.add(g.id); rateGame(g.id); });
   };
   listen(query(ref(db, "index"), orderByChild("startedAt"), limitToLast(60)), v => { cache.index = v || {}; draw(); });
   listen(ref(db, "views"), v => { cache.views = v || {}; draw(); });
   listen(ref(db, "ratings"), v => { cache.ratings = v || {}; draw(); });
 }
 function card(g) {
-  const live = g.status === "live", hs = g.homeScore ?? 0, as = g.awayScore ?? 0;
+  const live = isLive(g), hs = g.homeScore ?? 0, as = g.awayScore ?? 0;
   const row = (t, s, lose) => `<div class="trow ${lose ? "lose" : ""}">${badge(t, "xs")}<span class="s">${s}</span><span class="n">${esc(t?.name)}</span></div>`;
   const ot = (g.q || 0) >= 5, r = cache.ratings?.[g.id];
   const state = live ? `<span class="live">${esc(g.clock)} ${qWord(g.q || 1)}</span>` : `<span>Final${ot ? "/OT" : ""}</span>`;
@@ -390,7 +392,7 @@ function showGame(id, tab = "feed", sub = null) {
 }
 
 function board(m) {
-  const live = m.status === "live", ball = Math.max(0, Math.min(100, m.ballOn ?? 50)), home = m.poss === "Home";
+  const live = isLive(m), ball = Math.max(0, Math.min(100, m.ballOn ?? 50)), home = m.poss === "Home";
   const fd = home ? Math.min(100, ball + (m.toGo || 10)) : Math.max(0, ball - (m.toGo || 10)), at = y => 6 + y * 0.88;
   return `<section class="board"><div class="row">
       <div class="team">${badge(m.away, "lg")}<div><div class="pts">${m.awayScore ?? 0}${m.poss === "Away" && live ? `<span class="poss">●</span>` : ""}</div><div class="city">${esc(m.away?.city)} ${esc(m.away?.name)}</div></div></div>
@@ -435,7 +437,7 @@ function gameTab(ctx) {
   for (const p of asc) { const d = (p.homeScore ?? 0) - (p.awayScore ?? 0);
     if (d > big.Home.v) big.Home = { v: d, q: qName(p.q) }; if (-d > big.Away.v) big.Away = { v: -d, q: qName(p.q) };
     const s = Math.sign(d); if (s !== 0 && leader !== 0 && s !== leader) changes++; if (s !== 0) leader = s; }
-  const S = teamStats(asc, players, flags), A = S.Away, H = S.Home, ex = m.status === "final" ? excitement(asc, m) : null;
+  const S = teamStats(asc, players, flags), A = S.Away, H = S.Home, ex = !isLive(m) ? excitement(asc, m) : null;
   const rows = [
     ["Total yards", A.yds, H.yds], ["Time of possession", mmss(A.top), mmss(H.top), A.top, H.top], ["First downs", A.fd, H.fd],
     ["3rd down", `${A.c3}/${A.a3}`, `${H.c3}/${H.a3}`, pct(A.c3, A.a3), pct(H.c3, H.a3)], ["4th down", `${A.c4}/${A.a4}`, `${H.c4}/${H.a4}`, pct(A.c4, A.a4), pct(H.c4, H.a4)],
@@ -477,11 +479,12 @@ function teamTab(ctx, side, view) {
   const tr = teamRating(ctx, side);
   const head = `<section class="teamhead"><a href="#/game/${esc(id)}/team/${side}" title="Team performance">${badge(t, "lg")}</a>
     <div><div class="nm"><a href="#/game/${esc(id)}/team/${side}">${esc(t?.city)} ${esc(t?.name)}</a><small class="${cls(tr)}">${one(tr)}</small></div>${teamStrip(S)}</div></section>`;
+  const shown = list.filter(([, p]) => !p.unit || (view === "off" ? p.unit !== "Def" : p.unit === "Def"));
   const sorted = view === "off"
-    ? list.sort((a, b) => (ORDER[a[1].slot] ?? 9) - (ORDER[b[1].slot] ?? 9) || (perf[b[0]].rtg - perf[a[0]].rtg))
-    : list.sort((a, b) => ((b[1].stats?.Tkl || 0) - (a[1].stats?.Tkl || 0)) || (perf[b[0]].rtg - perf[a[0]].rtg));
+    ? shown.sort((a, b) => (ORDER[a[1].slot] ?? 9) - (ORDER[b[1].slot] ?? 9) || (perf[b[0]].rtg - perf[a[0]].rtg))
+    : shown.sort((a, b) => ((b[1].stats?.Tkl || 0) - (a[1].stats?.Tkl || 0)) || (perf[b[0]].rtg - perf[a[0]].rtg));
   const rows = sorted.map(([k, p]) => `<div class="prow"><a href="#/game/${esc(id)}/perf/${esc(k)}" title="${esc(p.name)}">${avatar(p.name, t)}</a>
-      <div><div class="nm"><a href="#/game/${esc(id)}/perf/${esc(k)}">${esc(p.name)}</a> <span>${esc(view === "off" ? posOf(p) : p.def)}</span><em class="${cls(perf[k].rtg)}">${one(perf[k].rtg)}</em>${p.human ? `<span class="you">Player</span>` : ""}</div>
+      <div><div class="nm"><a href="#/game/${esc(id)}/perf/${esc(k)}">${esc(p.name)}</a> <span>${esc(posOf(p))}</span><em class="${cls(perf[k].rtg)}">${one(perf[k].rtg)}</em>${p.human ? `<span class="you">Player</span>` : ""}</div>
       ${cells(view === "off" ? offenseCells(p, perf[k]) : defenseCells(p, perf[k]))}</div></div>`).join("");
   return head + `<nav class="tabs sub"><a class="${view === "off" ? "on" : ""}" href="#/game/${esc(id)}/${side.toLowerCase()}/off">Offense</a><a class="${view === "def" ? "on" : ""}" href="#/game/${esc(id)}/${side.toLowerCase()}/def">Defense</a></nav>` + rows;
 }
@@ -521,7 +524,7 @@ function perfTab(ctx, pkey) {
     : (s.Rec || s.Tgt) ? `${s.RecYds || 0}<small>yds</small>${s.Rec || 0}<small>rec</small>${s.RecTD || 0}<small>td</small>`
     : `${s.Tkl || 0}<small>tkl</small>${s.Sack || 0}<small>sack</small>${s.DInt || 0}<small>int</small>`;
   return perfStrip(ctx, list, key) + `
-    <section class="hero">${avatar(p.name, team)}<div><div class="nm">${esc(p.name)} · ${esc(posOf(p))} / ${esc(p.def)} · ${one(pf.pts)} pts</div><div class="big">${headline}</div></div>
+    <section class="hero">${avatar(p.name, team)}<div><div class="nm">${esc(p.name)} · ${esc(posOf(p))} · ${one(pf.pts)} pts</div><div class="big">${headline}</div></div>
       <div class="rt ${cls(pf.rtg)}">${one(pf.rtg)}<small>Performance rating</small></div></section>
     ${statGrid(p, pf)}<h2>Rating breakdown</h2>${quarterChart(pf.byQ)}
     <h2>Plays</h2>${mine.length ? mine.map(pl => playRow(pl, ctx, pl.players?.[key] ?? shownValue(pl, ctx.tags[pl.n]))).join("") : `<div class="empty">No plays yet.</div>`}`;
@@ -535,7 +538,7 @@ function teamPerf(ctx, side) {
   for (const p of asc) { const q = "Q" + Math.min(p.q, 5); byQ[q] = (byQ[q] || 0) + forUs(p); }
   const best = [...asc].sort((a, b) => forUs(b) - forUs(a)).slice(0, 6).filter(p => forUs(p) > 0);
   const tops = Object.entries(players).filter(([, p]) => p.team === side).sort((a, b) => perf[b[0]].rtg - perf[a[0]].rtg).slice(0, 4);
-  const result = m.status === "final" ? (us > them ? "Win" : us < them ? "Loss" : "Tie") : "Live";
+  const result = !isLive(m) ? (us > them ? "Win" : us < them ? "Loss" : "Tie") : "Live";
   return perfStrip(ctx, perfList(ctx), "team:" + side) + `
     <section class="hero">${badge(t, "lg")}<div><div class="nm">${esc(t?.city)} ${esc(t?.name)} · ${result} ${us ?? 0}–${them ?? 0}</div>
       <div class="big">${S.yds}<small>yds</small>${S.pass}<small>pyds</small>${S.rush}<small>ruyds</small></div></div>
@@ -543,7 +546,7 @@ function teamPerf(ctx, side) {
     ${teamStrip(S)}
     <h2>Rating breakdown</h2>${quarterChart(byQ)}
     <h2>Top performers</h2>${tops.map(([k, p]) => `<div class="prow"><a href="#/game/${esc(id)}/perf/${esc(k)}">${avatar(p.name, t)}</a>
-      <div><div class="nm"><a href="#/game/${esc(id)}/perf/${esc(k)}">${esc(p.name)}</a> <span>${esc(posOf(p))} / ${esc(p.def)}</span><em class="${cls(perf[k].rtg)}">${one(perf[k].rtg)}</em></div>
+      <div><div class="nm"><a href="#/game/${esc(id)}/perf/${esc(k)}">${esc(p.name)}</a> <span>${esc(posOf(p))}</span><em class="${cls(perf[k].rtg)}">${one(perf[k].rtg)}</em></div>
       <div style="color:var(--mute);font-size:13px">${esc(p.line || "")}</div></div></div>`).join("")}
     <h2>Best plays</h2>${best.length ? best.map(p => playRow(p, ctx, forUs(p))).join("") : `<div class="empty">No big plays yet.</div>`}`;
 }
