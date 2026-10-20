@@ -222,6 +222,10 @@ function tagPlays(asc, meta) {
 }
 function describe(p, tg) {
   let t = whole(p.title);
+  if (p.airYds != null && /^(Incomplete pass|Pass broken up)$/.test(t)) {
+    const how = p.dropped ? ", dropped" : (t === "Pass broken up" ? ", broken up" : "");
+    t = (p.airYds > 0 ? `Incomplete ${p.airYds}-yd pass` : "Incomplete pass behind the line") + how;
+  }
   if (p.kind === "fgmiss") t = t.replace(/ missed$/, " attempt");
   const words = [tg?.score, tg?.style].filter(Boolean);
   if (!words.length) return t;
@@ -421,6 +425,8 @@ function playRow(p, ctx, valueOverride) {
       <h3 class="${scoring ? "sc" : p.turnover ? "to" : ""}">${esc(describe(p, tg))}</h3>
       ${p.primary ? `<div class="who">${link(p.primary)} <span>${esc(p.primary.line)}</span></div>` : unit}
       ${p.secondary ? `<div class="who2">${link(p.secondary)} <span>${esc(p.secondary.line)}</span></div>` : ""}
+      ${p.fd && !p.td && !p.turnover ? `<div class="try">✅ First Down</div>` : ""}
+      ${p.down === 4 && !p.fd && !p.td && !p.turnover && (p.rush || p.pass || p.sack) ? `<div class="try">🔄️ Turnover on Downs</div>` : ""}
       ${p.try ? `<div class="try">${p.try.good ? "🟢" : "🔴"} ${p.try.kind === "2pt" ? "2pt Conversion" : "Extra Point"} is ${p.try.good ? "Good" : "No Good"}</div>` : ""}
     </div>
     <div class="val ${cls(v)}" title="Play rating">${sign(v)}</div>
